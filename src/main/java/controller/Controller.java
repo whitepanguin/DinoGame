@@ -3,7 +3,7 @@ package controller;
 import dto.DinoDTO;
 import service.*;
 import domain.*;
-
+import Ui.Battleimage;
 import java.util.*;
 
 public class Controller {
@@ -32,6 +32,9 @@ public class Controller {
         int playerIdx = 0;
         int enemyIdx = 0;
 
+        // ✅ 전투 이미지 첫 출력
+        Battleimage.showBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
+
         while (true) {
             Dino player = playerTeam[playerIdx];
             Dino enemy = enemyTeam[enemyIdx];
@@ -50,6 +53,8 @@ public class Controller {
                 battleService.useSkill(player, enemy);
             } else if (action == 3) {
                 playerIdx = chooseAnotherDino(playerTeam);
+                // ✅ 플레이어 공룡 교체 시 이미지 갱신
+                Battleimage.updateBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
                 continue;
             }
 
@@ -58,7 +63,12 @@ public class Controller {
                 enemyIdx++;
                 if (enemyIdx >= 3) {
                     System.out.println("🎉 당신이 이겼습니다!");
+                    // ✅ 전투 이미지 닫기
+                    Battleimage.closeBattle();
                     return;
+                } else {
+                    // ✅ 적 공룡이 바뀌었을 때 이미지 갱신
+                    Battleimage.updateBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
                 }
             }
 
@@ -71,9 +81,13 @@ public class Controller {
                 System.out.println("☠️ 당신의 " + currPlayer.name + "이 쓰러졌습니다!");
                 if (Arrays.stream(playerTeam).noneMatch(Dino::isAlive)) {
                     System.out.println("💀 모든 공룡이 쓰러졌습니다. 패배...");
+                    // ✅ 전투 이미지 닫기
+                    Battleimage.closeBattle();
                     return;
                 } else {
                     playerIdx = chooseAnotherDino(playerTeam);
+                    // ✅ 플레이어 공룡 쓰러졌을 때 교체 후 이미지 갱신
+                    Battleimage.updateBattle(playerTeam[playerIdx], currEnemy);
                 }
             }
         }
