@@ -2,103 +2,76 @@ package sound;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 
-import java.io.File;
 import java.net.URL;
 
 public class Roar extends Application {
+
+    private MediaPlayer mediaPlayer;
 
     @Override
     public void start(Stage primaryStage) {
         StackPane root = new StackPane();
         Scene scene = new Scene(root, 500, 400);
-        primaryStage.setTitle("JavaFX 이미지 + 오디오");
+        primaryStage.setTitle("JavaFX 오디오 10초 재생");
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // 🎵 오디오 로딩 비동기
-        Task<MediaPlayer> audioTask = new Task<>() {
-            @Override
-            protected MediaPlayer call() {
+        // 👇 창 숨기기 (선택)
+        // primaryStage.setOpacity(0);      // 완전 투명
+        // primaryStage.setIconified(true); // 최소화
+        // primaryStage.hide();             // 아예 숨김
+
+        // 🎵 오디오 재생 쓰레드
+        Thread audioThread = new Thread(() -> {
+            try {
                 URL resource = getClass().getResource("/sounds/Roar.wav");
                 if (resource == null) {
                     System.out.println("❌ 오디오 파일이 존재하지 않습니다.");
-                    return null;
+                    return;
                 }
 
                 Media media = new Media(resource.toExternalForm());
-                return new MediaPlayer(media);
-            }
-        };
+                mediaPlayer = new MediaPlayer(media);
 
-
-        audioTask.setOnSucceeded(event -> {
-            MediaPlayer mediaPlayer = audioTask.getValue();
-            if (mediaPlayer != null) {
                 mediaPlayer.setOnReady(() -> {
                     System.out.println("▶ 오디오 준비 완료");
                     mediaPlayer.play();
-                });
 
-                mediaPlayer.setOnEndOfMedia(() -> {
-                    System.out.println("✔ 오디오 재생 완료");
-                    mediaPlayer.dispose();
+                    // 🔟 10초 후 자동 종료
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(10_000); // 10초
+                            Platform.runLater(() -> {
+                                if (mediaPlayer != null) {
+                                    mediaPlayer.stop();
+                                    mediaPlayer.dispose();
+                                    System.out.println("🛑 종료합니다");
+                                }
+                                Platform.exit(); // JavaFX 앱 종료
+                            });
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
                 });
 
                 mediaPlayer.setOnError(() -> {
                     System.out.println("⚠️ 오디오 오류: " + mediaPlayer.getError().getMessage());
                 });
+
+            } catch (Exception e) {
+                System.out.println("⚠️ 오디오 로딩 예외: " + e.getMessage());
             }
         });
 
-        audioTask.setOnFailed(event -> {
-            System.out.println("⚠️ 오디오 로딩 실패");
-        });
-
-        // 🖼 이미지 로딩 비동기
-        Task<Image> imageTask = new Task<>() {
-            @Override
-            protected Image call() {
-                URL imageUrl = getClass().getResource("../book.png");
-                if (imageUrl == null) {
-                    System.out.println("❌ 이미지 파일이 존재하지 않습니다.");
-                    return null;
-                }
-
-                return new Image(imageUrl.toExternalForm(), true); // true: 백그라운드 로딩
-            }
-        };
-
-
-        imageTask.setOnSucceeded(event -> {
-            Image image = imageTask.getValue();
-            if (image != null) {
-                Platform.runLater(() -> {
-                    ImageView imageView = new ImageView(image);
-                    imageView.setFitWidth(400);
-                    imageView.setPreserveRatio(true);
-                    root.getChildren().add(imageView);
-                });
-            }
-        });
-
-        imageTask.setOnFailed(event -> {
-            System.out.println("⚠️ 이미지 로딩 실패");
-        });
-
-        // ✅ 비동기 실행 시작
-        new Thread(audioTask).start();
-        new Thread(imageTask).start();
+        audioThread.start();
     }
-
 
     public static void main(String[] args) {
         launch(args);
