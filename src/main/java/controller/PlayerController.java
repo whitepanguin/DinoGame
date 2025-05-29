@@ -1,32 +1,34 @@
+package controller;
 
 import java.util.*;
 
-public class Player {
-    private final List<Dano> myDinosaurs = new ArrayList<>();
-    private final List<Item> myItems = new ArrayList<>();
+
+public class PlayerController {
+    private final List<domain.Dino> myDinosaurs = new ArrayList<>();
+//    private final List<Item> myItems = new ArrayList<>();
     private int points;
 
-    public Player() {
+    public PlayerController() {
         this.points = 0;
     }
 
-    public List<Dano> getMyDinosaurs() {
+    public List<domain.Dino> getMyDinosaurs() {
         return myDinosaurs;
     }
 
-    public List<Item> getMyItems() {
-        return myItems;
-    }
+//    public List<Item> getMyItems() {
+//        return myItems;
+//    }
 
-    public void addDinosaur(Dano dino) {
+    public void addDinosaur(domain.Dino dino) {
         myDinosaurs.add(dino);
         System.out.println("🦖 새로운 공룡이 추가되었습니다: " + dino.name);
     }
 
-    public void addItem(Item item) {
-        myItems.add(item);
-        System.out.println("🎁 아이템을 획득했습니다: " + item.getName());
-    }
+//    public void addItem(Item item) {
+//        myItems.add(item);
+//        System.out.println("🎁 아이템을 획득했습니다: " + item.getName());
+//    }
 
     public void addPoints(int amount) {
         points += amount;
@@ -43,28 +45,28 @@ public class Player {
         }
     }
 
-    public void useItem(Dano targetDino) {
-        if (myItems.isEmpty()) {
-            System.out.println("❌ 사용 가능한 아이템이 없습니다.");
-            return;
-        }
+    public void useItem(domain.Dino targetDino) {
+//        if (myItems.isEmpty()) {
+//            System.out.println("❌ 사용 가능한 아이템이 없습니다.");
+//            return;
+//        }
 
         System.out.println("🧪 사용 가능한 아이템:");
-        for (int i = 0; i < myItems.size(); i++) {
-            Item item = myItems.get(i);
-            System.out.println("[" + i + "] " + item.getName());
-        }
+//        for (int i = 0; i < myItems.size(); i++) {
+//            Item item = myItems.get(i);
+//            System.out.println("[" + i + "] " + item.getName());
+//        }
 
         System.out.print("번호를 선택하세요: ");
         Scanner scanner = new Scanner(System.in);
         int index = scanner.nextInt();
 
-        if (index >= 0 && index < myItems.size()) {
-            Item item = myItems.remove(index);
-            item.applyTo(targetDino);
-        } else {
-            System.out.println("❌ 잘못된 번호입니다.");
-        }
+//        if (index >= 0 && index < myItems.size()) {
+//            Item item = myItems.remove(index);
+//            item.applyTo(targetDino);
+//        } else {
+//            System.out.println("❌ 잘못된 번호입니다.");
+//        }
     }
 
     public boolean switchDino(int index) {

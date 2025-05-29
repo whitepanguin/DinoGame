@@ -1,28 +1,30 @@
+package controller;
 
 import java.util.*;
+import domain.*;
 
-public class Stage {
+public class StageController {
     private int stageNumber;
     private final Scanner scanner = new Scanner(System.in);
     private final Random random = new Random();
 
-    public Stage(int stageNumber) {
+    public StageController(int stageNumber) {
         this.stageNumber = stageNumber;
     }
 
-    public boolean play(Player player) {
-        List<Dano> playerTeam = player.getMyDinosaurs();
-        List<Dano> enemyTeam = generateEnemyTeam();
+    public boolean play(PlayerController player) {
+        List<Dino> playerTeam = player.getMyDinosaurs();
+        List<Dino> enemyTeam = generateEnemyTeam();
 
         int playerIndex = 0;
         int enemyIndex = 0;
 
         while (playerIndex < playerTeam.size() && enemyIndex < enemyTeam.size()) {
-            Dano playerDino = playerTeam.get(playerIndex);
-            Dano enemyDino = enemyTeam.get(enemyIndex);
+            Dino playerDino = playerTeam.get(playerIndex);
+            Dino enemyDino = enemyTeam.get(enemyIndex);
 
-            SoundPlayer.play(playerDino.name);
-            SoundPlayer.play(enemyDino.name);
+//            SoundPlayer.play(playerDino.name);
+//            SoundPlayer.play(enemyDino.name);
 
             System.out.println("\n⚔️ 전투 시작: " + playerDino.name + " vs " + enemyDino.name);
             battle(player, playerDino, enemyDino);
@@ -39,8 +41,8 @@ public class Stage {
             System.out.println("상점에 들어가시겠습니까? [1] 예 / [2] 아니오");
             int choice = scanner.nextInt();
             if (choice == 1) {
-                Shop shop = new Shop();
-                shop.open(player);
+//                Shop shop = new Shop();
+//                shop.open(player);
             }
 
             System.out.println("▶️ 다음 스테이지로 진행하려면 엔터를 누르세요...");
@@ -53,7 +55,7 @@ public class Stage {
         }
     }
 
-    private void battle(Player player, Dano playerDino, Dano enemyDino) {
+    private void battle(PlayerController player, domain.Dino playerDino, domain.Dino enemyDino) {
         while (playerDino.isAlive() && enemyDino.isAlive()) {
             System.out.println("\n🧍‍♂️ 당신의 턴: [1] 공격 [2] 스킬 [3] 아이템 [4] 교체");
             int input = scanner.nextInt();
@@ -78,7 +80,7 @@ public class Stage {
                 case 4 -> {
                     System.out.println("🔄 교체할 공룡 번호 입력:");
                     for (int i = 0; i < player.getMyDinosaurs().size(); i++) {
-                        Dano d = player.getMyDinosaurs().get(i);
+                        domain.Dino d = player.getMyDinosaurs().get(i);
                         if (d.isAlive()) {
                             System.out.println("[" + i + "] " + d.name + " (HP: " + d.hp + ")");
                         }
@@ -109,7 +111,83 @@ public class Stage {
         }
     }
 
-    private List<Dano> generateEnemyTeam() {
-        return DBLoader.getEnemyTeamByStage(stageNumber); // DB 기반 로딩
+//    protected List<domain.Dino> generateEnemyTeam() {
+//        if (stageNumber == 1) {
+//            return DBLoader.getDinosByTier(5, 3);
+//        } else if (stageNumber == 2) {
+//            return DBLoader.getDinosByTypeAndTier("육", 4, 5, 3);
+//        } else if (stageNumber == 3) {
+//            return DBLoader.getDinosByTypeAndTier("해", 3, 4, 3);
+//        } else if (stageNumber == 4) {
+//            return DBLoader.getDinosByTypeAndTier("공", 2, 3, 3);
+//        } else if (stageNumber == 5) {
+//            List<domain.Dino> team = new ArrayList<>();
+//            team.add(DBLoader.getRandomDinoByTypeAndTier("육", 1, 1));
+//            team.add(DBLoader.getRandomDinoByTypeAndTier("해", 1, 1));
+//            team.add(DBLoader.getRandomDinoByTypeAndTier("공", 1, 1));
+//
+//        } else {
+//            throw new IllegalArgumentException("잘못된 스테이지 번호");
+//        }
+//        return team;
+//    }if (stageNumber == 1) {
+//            return DBLoader.getDinosByTier(5, 3);
+//        } else if (stageNumber == 2) {
+//            return DBLoader.getDinosByTypeAndTier("육", 4, 5, 3);
+//        } else if (stageNumber == 3) {
+//            return DBLoader.getDinosByTypeAndTier("해", 3, 4, 3);
+//        } else if (stageNumber == 4) {
+//            return DBLoader.getDinosByTypeAndTier("공", 2, 3, 3);
+//        } else if (stageNumber == 5) {
+//            List<domain.Dino> team = new ArrayList<>();
+//            team.add(DBLoader.getRandomDinoByTypeAndTier("육", 1, 1));
+//            team.add(DBLoader.getRandomDinoByTypeAndTier("해", 1, 1));
+//            team.add(DBLoader.getRandomDinoByTypeAndTier("공", 1, 1));
+//
+//        } else {
+//            throw new IllegalArgumentException("잘못된 스테이지 번호");
+//        }
+//        return team;
+//    }
+protected List<Dino> generateEnemyTeam() {
+    List<Dino> team = new ArrayList<>();
+    Random rand = new Random();
+
+    switch (stageNumber) {
+        case 1 -> {
+            // 5티어 공룡 (연습용: Parasaurolophus)
+            for (int i = 0; i < 3; i++) {
+                team.add(new Parasaurolophus()); // 기본 공룡
+            }
+        }
+        case 2 -> {
+            // 육 공룡 (Parasaurolophus)
+            for (int i = 0; i < 3; i++) {
+                team.add(new Parasaurolophus());
+            }
+        }
+        case 3 -> {
+            // 해 공룡 (Ichthyosaurus)
+            for (int i = 0; i < 3; i++) {
+                team.add(new Ichthyosaurus());
+            }
+        }
+        case 4 -> {
+            // 공 공룡 (Dimorphodon)
+            for (int i = 0; i < 3; i++) {
+                team.add(new Dimorphodon());
+            }
+        }
+        case 5 -> {
+            // 육/해/공 각각 한 마리
+            team.add(new Parasaurolophus());
+            team.add(new Ichthyosaurus());
+            team.add(new Dimorphodon());
+        }
+        default -> throw new IllegalArgumentException("잘못된 스테이지 번호");
     }
+
+    return team;
+}
+
 }
