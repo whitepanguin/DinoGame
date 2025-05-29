@@ -2,10 +2,9 @@ package domain;
 
 import java.util.Random;
 
-// 공 - 디모르포돈 / Dimorphodon
 public class Dimorphodon extends Dino {
-    public Dimorphodon() {
-        super("디모르포돈", 10, 150, 3);
+    public Dimorphodon(int id) {
+        super(id, "디모르포돈", 5, 10, 150, 3, "공", 4000);
     }
 
     @Override
@@ -15,7 +14,7 @@ public class Dimorphodon extends Dino {
 
     @Override
     public int getAttackPower() {
-        return power + new Random().nextInt(20); // 10~29
+        return power + new Random().nextInt(20);
     }
 
     @Override
@@ -27,7 +26,7 @@ public class Dimorphodon extends Dino {
     public void useSkill(Dino enemy) {
         if (canUseSkill()) {
             skillCount--;
-            int damage = (power * 2) + new Random().nextInt(20); // 20~39
+            int damage = (power * 2) + new Random().nextInt(20);
             System.out.println("바위 던지기! (일반 데미지 " + damage + ")");
             enemy.takeDamage(damage);
         } else {

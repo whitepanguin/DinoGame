@@ -2,10 +2,9 @@ package domain;
 
 import java.util.Random;
 
-// 해 - 이크티오사우루스 / Ichthyosaurus
 public class Ichthyosaurus extends Dino {
-    public Ichthyosaurus() {
-        super("이크티오사우루스", 10, 185, 2);
+    public Ichthyosaurus(int id) {
+        super(id, "이크티오사우루스", 5, 10, 185, 2, "해", 4500);
     }
 
     @Override
@@ -15,7 +14,7 @@ public class Ichthyosaurus extends Dino {
 
     @Override
     public int getAttackPower() {
-        return power + new Random().nextInt(20); // 10~29
+        return power + new Random().nextInt(20);
     }
 
     @Override
@@ -27,7 +26,7 @@ public class Ichthyosaurus extends Dino {
     public void useSkill(Dino enemy) {
         if (canUseSkill()) {
             skillCount--;
-            int damage = (power * 2) + new Random().nextInt(20); // 20~39
+            int damage = (power * 2) + new Random().nextInt(20);
             System.out.println("마구 물어 뜯기! (일반 데미지 " + damage + ")");
             enemy.takeDamage(damage);
         } else {

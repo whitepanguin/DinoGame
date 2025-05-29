@@ -1,3 +1,5 @@
+package com.dino;
+
 import controller.Controller;
 import domain.*;
 import repository.Repository;

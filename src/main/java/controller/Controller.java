@@ -3,7 +3,7 @@ package controller;
 import dto.DinoDTO;
 import service.*;
 import domain.*;
-
+import Ui.Battleimage;
 import java.util.*;
 
 public class Controller {
@@ -32,6 +32,9 @@ public class Controller {
         int playerIdx = 0;
         int enemyIdx = 0;
 
+        // ✅ 전투 이미지 첫 출력
+        Battleimage.showBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
+
         while (true) {
             Dino player = playerTeam[playerIdx];
             Dino enemy = enemyTeam[enemyIdx];
@@ -50,6 +53,8 @@ public class Controller {
                 battleService.useSkill(player, enemy);
             } else if (action == 3) {
                 playerIdx = chooseAnotherDino(playerTeam);
+                // ✅ 플레이어 공룡 교체 시 이미지 갱신
+                Battleimage.updateBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
                 continue;
             }
 
@@ -58,7 +63,12 @@ public class Controller {
                 enemyIdx++;
                 if (enemyIdx >= 3) {
                     System.out.println("🎉 당신이 이겼습니다!");
+                    // ✅ 전투 이미지 닫기
+                    Battleimage.closeBattle();
                     return;
+                } else {
+                    // ✅ 적 공룡이 바뀌었을 때 이미지 갱신
+                    Battleimage.updateBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
                 }
             }
 
@@ -71,9 +81,13 @@ public class Controller {
                 System.out.println("☠️ 당신의 " + currPlayer.name + "이 쓰러졌습니다!");
                 if (Arrays.stream(playerTeam).noneMatch(Dino::isAlive)) {
                     System.out.println("💀 모든 공룡이 쓰러졌습니다. 패배...");
+                    // ✅ 전투 이미지 닫기
+                    Battleimage.closeBattle();
                     return;
                 } else {
                     playerIdx = chooseAnotherDino(playerTeam);
+                    // ✅ 플레이어 공룡 쓰러졌을 때 교체 후 이미지 갱신
+                    Battleimage.updateBattle(playerTeam[playerIdx], currEnemy);
                 }
             }
         }
@@ -119,20 +133,52 @@ public class Controller {
     }
 
     private Dino[] generateEnemyTeam() {
-        Dino[] all = { new Parasaurolophus(), new Ichthyosaurus(), new Dimorphodon() };
         Dino[] team = new Dino[3];
         Random rand = new Random();
+
         for (int i = 0; i < 3; i++) {
-            team[i] = copyDino(all[rand.nextInt(all.length)]);
+            int randomId = rand.nextInt(30) + 1; // id 1~30 중 랜덤
+            Dino enemy = dinoService.getDinoById(randomId);
+
+            // fallback 처리
+            if (enemy == null) {
+                System.out.println("❗ 적 공룡을 불러오는 데 실패했습니다. 기본 공룡으로 대체합니다.");
+                enemy = new DinoData(randomId, "기본공룡", 1, 10, 100, 3, "육", 1000);
+            }
+
+            team[i] = enemy;
         }
         return team;
     }
 
+//    private Dino[] generateEnemyTeam() {
+//        Dino[] all = {
+//                new Parasaurolophus(1),  // id는 예시로 고유값 부여
+//                new Ichthyosaurus(2),
+//                new Dimorphodon(3)
+//        };
+//        Dino[] team = new Dino[3];
+//        Random rand = new Random();
+//        for (int i = 0; i < 3; i++) {
+//            team[i] = copyDino(all[rand.nextInt(all.length)]);
+//        }
+//        return team;
+//    }
+
+
     private Dino copyDino(Dino d) {
-        if (d instanceof Parasaurolophus) return new Parasaurolophus();
-        if (d instanceof Ichthyosaurus) return new Ichthyosaurus();
-        return new Dimorphodon();
+        return new NormalDino(
+                d.id,
+                d.name,
+                d.tear,
+                d.power,
+                d.maxHp,
+                d.maxSkillCount,
+                d.type,
+                d.price
+        );
     }
+
 
     private void printStatus(Dino d1, Dino d2) {
         System.out.println("\n🦖 현재 전투 상황");

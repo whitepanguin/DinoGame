@@ -2,10 +2,9 @@ package domain;
 
 import java.util.Random;
 
-// 육 - 파라사우롤로푸스 / Parasaurolophus
 public class Parasaurolophus extends Dino {
-    public Parasaurolophus() {
-        super("파라사우롤로푸스", 15, 150, 2);
+    public Parasaurolophus(int id) {
+        super(id, "파라사우롤로푸스", 5, 15, 150, 2, "육", 5000);
     }
 
     @Override
@@ -15,7 +14,7 @@ public class Parasaurolophus extends Dino {
 
     @Override
     public int getAttackPower() {
-        return power + new Random().nextInt(20); // 15~34
+        return power + new Random().nextInt(20);
     }
 
     @Override
@@ -27,7 +26,7 @@ public class Parasaurolophus extends Dino {
     public void useSkill(Dino enemy) {
         if (canUseSkill()) {
             skillCount--;
-            int damage = (power * 2) + new Random().nextInt(20); // 30~49
+            int damage = (power * 2) + new Random().nextInt(20);
             System.out.println("머리 강타! (일반 데미지 " + damage + ")");
             enemy.takeDamage(damage);
         } else {
