@@ -1,44 +1,73 @@
 package domain;
 
+import java.time.LocalDateTime;
 
-public abstract class Dino {
-    static int nextId = 1;
-    public final int id;
-    public final String name;
-    public final int maxHp;
+public class Dino {
+    public int id;
+    public String name;
+    public int tear;
+    public int power;
     public int hp;
-    public final int power;
-    public final int maxSkillCount;
+    public int maxHp;
     public int skillCount;
+    public int maxSkillCount;
+    public String type;
+    public int price;
+    public LocalDateTime createdAt;
 
-    public Dino(String name, int power, int maxHp, int maxSkillCount) {
-        this.id = nextId++;
+    public Dino(int id, String name, int tear, int power, int hp, int skillCount, String type, int price, LocalDateTime createdAt) {
+        this.id = id;
         this.name = name;
+        this.tear = tear;
         this.power = power;
-        this.maxHp = maxHp;
-        this.hp = maxHp;
-        this.maxSkillCount = maxSkillCount;
-        this.skillCount = maxSkillCount;
+        this.hp = hp;
+        this.skillCount = skillCount;
+        this.maxHp = hp;
+        this.maxSkillCount = skillCount;
+        this.type = type;
+        this.price = price;
+        this.createdAt = createdAt;
     }
 
-    public abstract void attack();
-    public abstract int getAttackPower();
-    public abstract String getSkillName();
-    public abstract void useSkill(Dino enemy);
+    public Dino(String name, int tear, int power, int hp, int skillCount, String type, int price) {
+        this(0, name, tear, power, hp, skillCount, type, price, LocalDateTime.now());
+    }
 
     public boolean isAlive() {
-        return hp > 0;
+        return this.hp > 0;
     }
+
+    public void printStatus() {
+        System.out.println("[" + name + "] HP: " + hp + "/" + maxHp + " | 스킬: " + skillCount + "/" + maxSkillCount);
+    }
+
     public boolean canUseSkill() {
         return skillCount > 0;
     }
 
+    public void useSkill(Dino target) {
+        if (!canUseSkill()) {
+            System.out.println(this.name + "은(는) 스킬을 사용할 수 없습니다!");
+            return;
+        }
+        int skillDamage = (int)(this.power * 1.5);
+        System.out.println(this.name + "이(가) 스킬을 사용합니다! (" + skillDamage + " 데미지)");
+        target.hp = Math.max(0, target.hp - skillDamage);
+        skillCount--;
+    }
+
+    public int getAttackPower() {
+        return this.power;
+    }
     public void takeDamage(int damage) {
-        hp -= damage;
-        if (hp < 0) hp = 0;
+        this.hp = Math.max(0, this.hp - damage);
     }
-    public void printStatus() {
-        System.out.println(name + " 체력: " + hp + "/" + maxHp + " | 스킬: " + skillCount + "/" + maxSkillCount);
+    public void attack(Dino target) {
+        int damage = getAttackPower();
+        target.takeDamage(damage);
+        System.out.println(this.name + "의 공격! " + damage + " 데미지!");
     }
+
+
 
 }

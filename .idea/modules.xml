@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/DinoGame.iml" filepath="$PROJECT_DIR$/DinoGame.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../javafx-sdk/lib/lib.iml" filepath="$PROJECT_DIR$/../../javafx-sdk/lib/lib.iml" />
     </modules>
   </component>
 </project>

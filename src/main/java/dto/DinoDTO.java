@@ -3,6 +3,7 @@ package dto;
 public class DinoDTO {
     public int id;
     public String name;
+//    public int power;
     public int hp;
     public int maxHp;
     public int skillCount;
@@ -11,6 +12,7 @@ public class DinoDTO {
     public DinoDTO(int id, String name, int hp, int maxHp, int skillCount, int maxSkillCount) {
         this.id = id;
         this.name = name;
+//        public int power;
         this.hp = hp;
         this.maxHp = maxHp;
         this.skillCount = skillCount;
