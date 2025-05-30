@@ -1,5 +1,9 @@
 package domain;
 
+import sound.FlyingRoar;
+import sound.Roar;
+import sound.SeaRoar;
+
 import java.time.LocalDateTime;
 
 public class Dino {
@@ -54,6 +58,8 @@ public class Dino {
         System.out.println(this.name + "이(가) 스킬을 사용합니다! (" + skillDamage + " 데미지)");
         target.hp = Math.max(0, target.hp - skillDamage);
         skillCount--;
+        System.out.println("남은 스킬 횟수: " + skillCount + "/" + maxSkillCount);
+
     }
 
     public int getAttackPower() {
@@ -66,6 +72,26 @@ public class Dino {
         int damage = getAttackPower();
         target.takeDamage(damage);
         System.out.println(this.name + "의 공격! " + damage + " 데미지!");
+    }
+    public String getType() {
+        return this.type;
+    }
+    // Dino.java 내부에 아래 메서드 추가
+    public String getName() {
+        return this.name;
+    }
+    public int getHp() {
+        return this.hp;
+    }
+
+
+    public void playSound() {
+        switch (this.type) {
+            case "육" -> Roar.play();
+            case "해" -> SeaRoar.play();
+            case "공" -> FlyingRoar.play();
+            default -> System.out.println("[사운드 없음] 알 수 없는 타입: " + type);
+        }
     }
 
 

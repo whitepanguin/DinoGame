@@ -5,10 +5,12 @@ import service.*;
 import domain.*;
 import Ui.Battleimage;
 import java.util.*;
+import java.net.URL;
 import shop.Shop;
 import repository.*;
 
 public class Controller {
+    private final StageController stageController = new StageController();
     private final Service dinoService = new Service();
     private final BattleService battleService = new BattleService();
     private final Shop shop = new Shop();
@@ -27,7 +29,6 @@ public class Controller {
             user.id = userId;
             user.points = 1000;
 
-            // 기본 공룡 3종 등록
             List<Integer> starterIds = createStarterDinos();
             user.dinoIds = starterIds.stream()
                     .map(String::valueOf)
@@ -38,116 +39,163 @@ public class Controller {
         } else {
             System.out.println("✅ 기존 유저 불러오기 완료.");
         }
+        user.currentStage = 1;
 
-        while (true) {
+        while (user.currentStage <= 5) {
             System.out.println("\n🦕 스테이지 " + user.currentStage + " 시작!");
-            playStage();
 
-            // 전투 후 상점
-            shop.open(user);
-
-            // 유저 상태 갱신
-            user.currentStage++;
-            user.maxStage = Math.max(user.maxStage, user.currentStage);
-            userRepo.update(user);
-
-            System.out.print("➡️ 다음 스테이지로 진행할까요? (1: 예, 2: 아니오): ");
-            int next = sc.nextInt();
-            if (next != 1) {
-                System.out.println("👋 게임을 종료합니다.");
-
-                // 유저 정보 저장
-                userRepo.update(user);
-
-                // 종료 메시지 출력
-                System.out.println("\n📦 게임 저장이 완료되었습니다.");
-                System.out.println("🧑 유저 ID: " + user.id);
-                System.out.println("💰 남은 포인트: " + user.points);
-                System.out.println("📈 최종 스테이지: " + user.currentStage + " (최고 스테이지: " + user.maxStage + ")");
-                System.out.println("🦕 보유 공룡: " + (user.dinoIds == null || user.dinoIds.isBlank() ? "없음" : user.dinoIds));
-                System.out.println("🎁 보유 아이템: " + (user.itemIds == null || user.itemIds.isBlank() ? "없음" : user.itemIds));
-            }
-        }
-    }
-
-    private void playStage() {
-        Dino[] playerTeam = choosePlayerDinos(); // ✅ DinoDTO → Dino
-//        System.out.println("디버깅: user.dinoIds = " + user.dinoIds);
-
-        if (playerTeam.length < 1) {
-            System.out.println("⚠️ 플레이할 공룡이 없습니다.");
-            return;
-        }
-
-        // ✅ 스테이지 기반 tear 반영
-        Dino[] enemyTeam = generateEnemyTeam(user.currentStage);
-
-        int playerIdx = 0;
-        int enemyIdx = 0;
-
-        // ✅ 전투 이미지 첫 출력
-        Battleimage.showBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
-
-        while (true) {
-            Dino player = playerTeam[playerIdx];
-            Dino enemy = enemyTeam[enemyIdx];
-
-            printStatus(player, enemy);
-            System.out.println("\n[당신의 턴]");
-            System.out.println("1. 일반 공격");
-            System.out.println("2. 스킬 사용");
-            System.out.println("3. 공룡 교체");
-            System.out.print("선택 >> ");
-            int action = sc.nextInt();
-
-            if (action == 1) {
-                battleService.normalAttack(player, enemy);
-            } else if (action == 2) {
-                battleService.useSkill(player, enemy);
-            } else if (action == 3) {
-                playerIdx = chooseAnotherDino(playerTeam);
-                Battleimage.updateBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
-                continue;
+            // 1. 플레이어 공룡 선택
+            Dino[] playerTeam = choosePlayerDinos();
+            if (playerTeam.length < 1) {
+                System.out.println("⚠️ 플레이할 공룡이 없습니다.");
+                break;
             }
 
-            if (!enemy.isAlive()) {
-                System.out.println("✅ 적 " + enemy.name + " 쓰러짐!");
-                enemyIdx++;
-                if (enemyIdx >= enemyTeam.length) {
-                    System.out.println("🎉 당신이 이겼습니다!");
-                    Battleimage.closeBattle();
-                    return;
-                } else {
-                    Battleimage.updateBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
-                }
-            }
+            // 2. 적 공룡 생성 및 배경 준비
+            Dino[] enemyTeam = generateEnemiesByStage(user.currentStage).toArray(new Dino[0]);
+            String backgroundPath = getBackgroundPath(user.currentStage);
 
-            Dino currEnemy = enemyTeam[enemyIdx];
-            Dino currPlayer = playerTeam[playerIdx];
-            System.out.println("\n[👾 적의 턴]");
-            handleEnemyTurn(currEnemy, currPlayer);
+            // 3. 첫 공룡 인덱스 초기화
+            int playerIdx = 0;
+            int enemyIdx = 0;
 
-            if (!currPlayer.isAlive()) {
-                System.out.println("☠️ 당신의 " + currPlayer.name + "이 쓰러졌습니다!");
-                if (Arrays.stream(playerTeam).noneMatch(Dino::isAlive)) {
-                    System.out.println("💀 모든 공룡이 쓰러졌습니다. 패배...");
-                    Battleimage.closeBattle();
-                    return;
-                } else {
+            // ✅ 4. 전투 시작 화면 출력 (여기가 정확한 위치)
+            Battleimage.showBattle(playerTeam[playerIdx], enemyTeam[enemyIdx], backgroundPath);
+
+            // 5. 전투 루프
+            boolean cleared = false;
+            while (true) {
+                Dino player = playerTeam[playerIdx];
+                Dino enemy = enemyTeam[enemyIdx];
+
+                printStatus(player, enemy);
+                System.out.println("\n[당신의 턴]");
+                System.out.println("1. 일반 공격");
+                System.out.println("2. 스킬 사용");
+                System.out.println("3. 아이템 사용");
+                System.out.println("4. 공룡 교체");
+                System.out.print("선택 >> ");
+                int action = sc.nextInt();
+
+                if (action == 1) {
+                    battleService.normalAttack(player, enemy);
+                } else if (action == 2) {
+                    battleService.useSkill(player, enemy);
+                } else if (action == 3) {
+                    System.out.println("⚠️ 아이템 사용 기능은 구현 예정입니다.");
+                } else if (action == 4) {
                     playerIdx = chooseAnotherDino(playerTeam);
-                    Battleimage.updateBattle(playerTeam[playerIdx], currEnemy);
+                    Battleimage.updateBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
+                    continue;
+                }
+
+                // 적 쓰러짐 체크
+                if (!enemy.isAlive()) {
+                    System.out.println("✅ 적 " + enemy.name + " 쓰러짐!");
+                    enemyIdx++;
+                    if (enemyIdx >= enemyTeam.length) {
+                        System.out.println("🎉 당신이 이겼습니다!");
+                        cleared = true;
+                        Battleimage.closeBattle();
+                        break;
+                    } else {
+                        Battleimage.updateBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
+                    }
+                }
+
+                // 적의 턴
+                Dino currEnemy = enemyTeam[enemyIdx];
+                Dino currPlayer = playerTeam[playerIdx];
+                System.out.println("\n[👾 적의 턴]");
+                handleEnemyTurn(currEnemy, currPlayer);
+
+                // 플레이어 쓰러짐 체크
+                if (!currPlayer.isAlive()) {
+                    System.out.println("☠️ 당신의 " + currPlayer.name + "이 쓰러졌습니다!");
+                    if (Arrays.stream(playerTeam).noneMatch(Dino::isAlive)) {
+                        System.out.println("💀 모든 공룡이 쓰러졌습니다. 패배...");
+                        Battleimage.closeBattle();
+                        cleared = false;
+                        break;
+                    } else {
+                        playerIdx = chooseAnotherDino(playerTeam);
+                        Battleimage.updateBattle(playerTeam[playerIdx], currEnemy);
+                    }
                 }
             }
+
+            // 승리 후 처리
+            if (cleared) {
+                int reward = 200 * user.currentStage;
+                user.points += reward;
+                System.out.println("💰 스테이지 보상: " + reward + "포인트 지급! (총 보유: " + user.points + ")");
+
+                System.out.print("🛍 상점에 들르시겠습니까? (1: 예, 2: 아니오): ");
+                int goShop = sc.nextInt();
+                if (goShop == 1) shop.open(user);
+
+                if (user.currentStage == 5) {
+                    System.out.println("\n🎊 모든 스테이지를 클리어했습니다! 게임 종료");
+                    break;
+                }
+
+                System.out.print("➡️ 다음 스테이지로 진행할까요? (1: 예, 2: 아니오): ");
+                int goNext = sc.nextInt();
+                if (goNext != 1) break;
+
+                // 다음 스테이지로 진행
+                user.currentStage++;
+            } else {
+                System.out.println("💡 다시 도전하려면 스테이지 1부터 시작합니다.");
+                user.currentStage = 1;
+            }
         }
+
+
+        userRepo.update(user);
+        System.out.println("\n📦 게임 저장 완료. 수고하셨습니다!");
+        System.out.println("🧑 유저 ID: " + user.id);
+        System.out.println("📈 최종 스테이지: " + user.currentStage);
+        System.out.println("🦕 보유 공룡: " + (user.dinoIds == null || user.dinoIds.isBlank() ? "없음" : user.dinoIds));
     }
 
+    private String getBackgroundPath(int stageNumber) {
+        String filename = switch (stageNumber) {
+            case 1 -> "/image/bg.png";
+            case 2 -> "/image/bg_land.png";
+            case 3 -> "/image/bg_sea.png";
+            case 4 -> "/image/bg_air.png";
+            case 5 -> "/image/bg_final.png";
+            default -> "/image/bg.png";
+        };
 
-    private void handleEnemyTurn(Dino enemy, Dino player) {
-        if (enemy.hp < 60 && enemy.canUseSkill() && new Random().nextInt(100) < 60) {
-            enemy.useSkill(player);
-        } else {
-            battleService.normalAttack(enemy, player);
+        URL resource = getClass().getResource(filename);
+        if (resource == null) {
+            System.out.println("❌ 배경 이미지 파일을 찾을 수 없습니다: " + filename);
+            return "";
         }
+        return resource.toExternalForm();
+    }
+
+    private List<Dino> generateEnemiesByStage(int stageNumber) {
+        DinoRepository dinoRepo = new DinoRepository();
+        return switch (stageNumber) {
+            case 1 -> dinoRepo.findRandomDinosByTear(5, 3);
+            case 2 -> dinoRepo.findRandomDinosByTypeAndTear("육", 4, 5, 3);
+            case 3 -> dinoRepo.findRandomDinosByTypeAndTear("해", 3, 4, 3);
+            case 4 -> dinoRepo.findRandomDinosByTypeAndTear("공", 2, 3, 3);
+            case 5 -> {
+                List<Dino> result = new ArrayList<>();
+                result.addAll(dinoRepo.findRandomDinosByTypeAndTear("육", 1, 1, 1));
+                result.addAll(dinoRepo.findRandomDinosByTypeAndTear("해", 1, 1, 1));
+                result.addAll(dinoRepo.findRandomDinosByTypeAndTear("공", 1, 1, 1));
+                yield result;
+            }
+            default -> {
+                System.out.println("⚠️ 존재하지 않는 스테이지입니다.");
+                yield new ArrayList<>();
+            }
+        };
     }
 
     private Dino[] choosePlayerDinos() {
@@ -176,12 +224,11 @@ public class Controller {
         return selected;
     }
 
-
     private int chooseAnotherDino(Dino[] team) {
         System.out.println("교체할 공룡을 선택하세요:");
         for (int i = 0; i < team.length; i++) {
             if (team[i].isAlive()) {
-                System.out.println(i + 1 + ". " + team[i].name + " (HP: " + team[i].hp + ")");
+                System.out.println((i + 1) + ". " + team[i].name + " (HP: " + team[i].hp + ")");
             }
         }
         int choice;
@@ -194,39 +241,26 @@ public class Controller {
         return choice;
     }
 
+    private void handleEnemyTurn(Dino enemy, Dino player) {
+        if (enemy.hp < 60 && enemy.canUseSkill() && new Random().nextInt(100) < 60) {
+            enemy.useSkill(player);
+        } else {
+            battleService.normalAttack(enemy, player);
+        }
+    }
+
     private List<Integer> createStarterDinos() {
         DinoRepository dinoRepo = new DinoRepository();
         List<Integer> starterIds = new ArrayList<>();
-
-        // tear가 5인 공룡 중 랜덤으로 3마리 선택
         List<Dino> randomDinos = dinoRepo.findRandomDinosByTear(5, 3);
-
         for (Dino dino : randomDinos) {
-            // 선택된 공룡 ID만 추출
             starterIds.add(dino.id);
         }
         return starterIds;
     }
 
-
-    private Dino[] generateEnemyTeam(int stage) {
-        DinoRepository dinoRepo = new DinoRepository();
-        // tear 값 결정 로직
-        int tear = switch (stage) {
-            case 1 -> 5;
-            case 2 -> 4;
-            case 3 -> 3;
-            case 4 -> 2;
-            default -> 1;
-        };
-        // 해당 티어의 공룡 중 랜덤하게 3마리 선택
-        List<Dino> randomDinos = dinoRepo.findRandomDinosByTear(tear, 3);
-        // 배열로 변환
-        return randomDinos.toArray(new Dino[0]);
-    }
-
     private DinoDTO cloneDTO(DinoDTO dto) {
-        return new DinoDTO(dto.id, dto.name, dto.hp, dto.maxHp, dto.skillCount, dto.maxSkillCount); // ✅ power 제외
+        return new DinoDTO(dto.id, dto.name, dto.hp, dto.maxHp, dto.skillCount, dto.maxSkillCount);
     }
 
     private List<Integer> parseIds(String csv) {
@@ -245,7 +279,4 @@ public class Controller {
         d1.printStatus();
         d2.printStatus();
     }
-
-
-
 }

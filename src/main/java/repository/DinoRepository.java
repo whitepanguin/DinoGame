@@ -46,6 +46,42 @@ public class DinoRepository {
         return dinos;
     }
 
+    public List<Dino> findRandomDinosByTypeAndTear(String type, int minTear, int maxTear, int limit) {
+        List<Dino> dinos = new ArrayList<>();
+        String sql = "SELECT * FROM dinos WHERE type = ? AND tear BETWEEN ? AND ? ORDER BY RAND() LIMIT ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, type);
+            stmt.setInt(2, minTear);
+            stmt.setInt(3, maxTear);
+            stmt.setInt(4, limit);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Dino d = new Dino(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getInt("tear"),
+                            rs.getInt("power"),
+                            rs.getInt("hp"),
+                            rs.getInt("skill_count"),
+                            rs.getString("type"),
+                            rs.getInt("price"),
+                            rs.getTimestamp("created_at").toLocalDateTime()
+                    );
+                    dinos.add(d);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return dinos;
+    }
+
+
     public int save(Dino dino) {
         String sql = "INSERT INTO dinos (name, tear, power, hp, skill_count, type, price, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
