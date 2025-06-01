@@ -58,13 +58,20 @@ public class Controller {
             Dino[] enemyTeam = generateEnemiesByStage(user.currentStage).toArray(new Dino[0]);
             String backgroundPath = getBackgroundPath(user.currentStage);
 
+
+
             // 3. 첫 공룡 인덱스 초기화
             int playerIdx = 0;
             int enemyIdx = 0;
 
             // ✅ 4. 전투 시작 화면 출력 (여기가 정확한 위치)
-            Battleimage.showBattle(playerTeam[playerIdx], enemyTeam[enemyIdx], backgroundPath);
-
+//            Battleimage.showBattle(playerTeam[playerIdx], enemyTeam[enemyIdx], backgroundPath);
+            if (user.currentStage == 1) {
+                Battleimage.showBattle(playerTeam[playerIdx], enemyTeam[enemyIdx], backgroundPath);
+            } else {
+                Battleimage.updateBackground(backgroundPath);
+                Battleimage.updateBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
+            }
             // 5. 전투 루프
             boolean cleared = false;
             while (true) {
@@ -101,7 +108,7 @@ public class Controller {
                     if (enemyIdx >= enemyTeam.length) {
                         System.out.println("🎉 당신이 이겼습니다!");
                         cleared = true;
-                        Battleimage.closeBattle();
+//                        Battleimage.closeBattle();
                         break;
                     } else {
                         Battleimage.updateBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
@@ -119,7 +126,7 @@ public class Controller {
                     System.out.println("☠️ 당신의 " + currPlayer.name + "이 쓰러졌습니다!");
                     if (Arrays.stream(playerTeam).noneMatch(Dino::isAlive)) {
                         System.out.println("💀 모든 공룡이 쓰러졌습니다. 패배...");
-                        Battleimage.closeBattle();
+//                        Battleimage.closeBattle();
                         cleared = false;
                         break;
                     } else {

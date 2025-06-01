@@ -20,12 +20,10 @@ public class Battleimage {
 
     // 공룡 클래스 이름과 이미지 경로 매핑
     private static final Map<String, String> IMAGE_MAP = Map.of(
-            "Quetzalcoatlus",  "file:src/image/Quetzalcoatlus.png",
-            "Giganotosaurus",  "file:src/image/giganotosaurus.png",
-            "Mosasaurus",      "file:src/image/Mosasaurus.png",
-            "Parasaurolophus", "file:src/image/Parasaurolophus.png",
-            "Dimorphodon",     "file:src/image/Dimorphodon.png",
-            "Ichthyosaurus",   "file:src/image/Ichthyosaurus.png"
+
+            "육", "file:src/image/Parasaurolophus.png",
+            "공",     "file:src/image/Dimorphodon.png",
+            "해",   "file:src/image/Ichthyosaurus.png"
     );
 
     static {
@@ -87,14 +85,14 @@ public class Battleimage {
     public static void updateBattle(Dino player, Dino enemy) {
         Platform.runLater(() -> {
             if (playerView != null && player != null) {
-                String playerKey = player.getClass().getSimpleName();
+                String playerKey = player.type;
                 String playerPath = IMAGE_MAP.getOrDefault(playerKey, IMAGE_MAP.get("Dimorphodon"));
                 playerView.setImage(new Image(playerPath));
                 playerView.setVisible(player.isAlive());
             }
 
             if (enemyView != null && enemy != null) {
-                String enemyKey = enemy.getClass().getSimpleName();
+                String enemyKey = enemy.type;
                 String enemyPath = IMAGE_MAP.getOrDefault(enemyKey, IMAGE_MAP.get("Dimorphodon"));
                 enemyView.setImage(new Image(enemyPath));
                 enemyView.setVisible(enemy.isAlive());
