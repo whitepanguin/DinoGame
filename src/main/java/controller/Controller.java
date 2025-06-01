@@ -89,13 +89,30 @@ public class Controller {
 
                 if (action == 1) {
                     battleService.normalAttack(player, enemy);
-                    player.playSound();
+//                    player.playSound();
                 } else if (action == 2) {
                     battleService.useSkill(player, enemy);
-                    player.playSound();
+//                    player.playSound();
                 } else if (action == 3) {
-                    System.out.println("⚠️ 아이템 사용 기능은 구현 예정입니다.");
-                } else if (action == 4) {
+                    List<Item> items = userRepo.getItems(user.itemIds);
+                    if (items.isEmpty()) {
+                        System.out.println("⚠️ 사용 가능한 아이템이 없습니다.");
+                    } else {
+                        System.out.println("🧪 사용 가능한 아이템 목록:");
+                        for (int i = 0; i < items.size(); i++) {
+                            Item item = items.get(i);
+                            System.out.println((i + 1) + ". " + item.name + " - " + item.effectDescription);
+                        }
+                        System.out.print("사용할 아이템 번호 (0 입력 시 취소) >> ");
+                        int choice = sc.nextInt();
+                        if (choice >= 1 && choice <= items.size()) {
+                            Item selectedItem = items.get(choice - 1);
+                            battleService.useItem(player, selectedItem);
+                            userRepo.removeItem(user, selectedItem);
+                        } else {
+                            System.out.println("🚫 아이템 사용 취소됨");
+                        }
+                    }                } else if (action == 4) {
                     playerIdx = chooseAnotherDino(playerTeam);
                     Battleimage.updateBattle(playerTeam[playerIdx], enemyTeam[enemyIdx]);
                     continue;
@@ -144,7 +161,12 @@ public class Controller {
 
                 System.out.print("🛍 상점에 들르시겠습니까? (1: 예, 2: 아니오): ");
                 int goShop = sc.nextInt();
-                if (goShop == 1) shop.open(user);
+                if (goShop == 1) {
+                    boolean inShop = true;
+                    while (inShop) {
+                        inShop = shop.open(user); // 상점 반복 입장
+                    }
+                }
 
                 if (user.currentStage == 5) {
                     System.out.println("\n🎊 모든 스테이지를 클리어했습니다! 게임 종료");
@@ -153,14 +175,21 @@ public class Controller {
 
                 System.out.print("➡️ 다음 스테이지로 진행할까요? (1: 예, 2: 아니오): ");
                 int goNext = sc.nextInt();
-                if (goNext != 1) break;
+                if (goNext != 1) {
+                    boolean inShop = true;
+                    while (inShop) {
+                        inShop = shop.open(user);  // ✅ '아니오' 선택 시 상점 루프
+                    }
+                    continue; // 다시 스테이지 클리어 이후 루프로
+                }
 
                 // 다음 스테이지로 진행
                 user.currentStage++;
-            } else {
+            }else {
                 System.out.println("💡 다시 도전하려면 스테이지 1부터 시작합니다.");
                 user.currentStage = 1;
             }
+
         }
 
 

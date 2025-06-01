@@ -94,6 +94,32 @@ public class Dino {
         }
     }
 
+    public void applyItem(Item item) {
+        switch (item.type) {
+            case "heal" -> {
+                int healAmount = (int) (maxHp * (item.effectValue / 100));
+                this.hp = Math.min(this.maxHp, this.hp + healAmount);
+                System.out.println("✨ 체력 회복! " + healAmount + "만큼 회복되었습니다.");
+            }
+            case "attack" -> {
+                int extraPower = (int) (this.power * (item.effectValue / 100));
+                this.power += extraPower;
+                System.out.println("💥 공격력 증가! 현재 공격력: " + this.power);
+            }
+            case "random" -> {
+                double rand = Math.random();
+                if (rand < item.effectValue) {
+                    this.hp = this.maxHp;
+                    System.out.println("🎯 대성공! 체력이 전부 회복되었습니다!");
+                } else {
+                    int damage = this.maxHp / 2;
+                    this.takeDamage(damage);
+                    System.out.println("💣 실패! 절반의 피해를 입었습니다. (-" + damage + ")");
+                }
+            }
+            default -> System.out.println("❌ 알 수 없는 아이템 타입입니다.");
+        }
+    }
 
 
 }

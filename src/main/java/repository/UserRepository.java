@@ -1,11 +1,13 @@
 package repository;
 
 import config.DBConfig;
+import domain.Item;
 import domain.User;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class UserRepository {
@@ -78,6 +80,50 @@ public class UserRepository {
         }
 
         return users;
+    }
+    public List<Item> getItems(String csv) {
+        List<Item> items = new ArrayList<>();
+        if (csv == null || csv.isBlank()) return items;
+
+        String[] ids = csv.split(",");
+        String placeholders = String.join(",", Collections.nCopies(ids.length, "?"));
+        String sql = "SELECT * FROM items WHERE id IN (" + placeholders + ")";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < ids.length; i++) {
+                stmt.setInt(i + 1, Integer.parseInt(ids[i].trim()));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Item item = new Item(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("type"),
+                            rs.getInt("price"),
+                            rs.getString("effect_description"),
+                            rs.getDouble("effect_value"),
+                            rs.getTimestamp("created_at").toLocalDateTime()
+                    );
+                    items.add(item);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return items;
+    }
+
+    public void removeItem(User user, Item usedItem) {
+        if (user.itemIds == null || user.itemIds.isBlank()) return;
+
+        List<String> ids = new ArrayList<>(List.of(user.itemIds.split(",")));
+        ids.removeIf(id -> id.equals(String.valueOf(usedItem.id)));
+
+        user.itemIds = String.join(",", ids);
+        update(user);
     }
 
     public User findById(int id) {

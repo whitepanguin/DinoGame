@@ -12,7 +12,7 @@ public class Shop {
     private final DinoRepository dinoRepo = new DinoRepository();
     private final UserRepository userRepo = new UserRepository();
 
-    public void open(User user) {
+    public boolean open(User user) {
         System.out.println("\n🏪 [상점이 열렸습니다]");
         System.out.println("현재 포인트: " + user.points);
         System.out.println("현재 스테이지: " + user.currentStage);
@@ -26,9 +26,16 @@ public class Shop {
         switch (choice) {
             case 1 -> buyItem(user);
             case 2 -> buyDino(user);
-            default -> System.out.println("상점을 나갑니다.");
+            case 0 -> {
+                System.out.println("상점을 나갑니다.");
+                return false;  // 나가기 선택 시 반복 종료
+            }
+            default -> System.out.println("❌ 잘못된 입력입니다.");
         }
+
+        return true; // 아이템 또는 공룡 구매 후 계속 상점 유지
     }
+
 
     private void buyItem(User user) {
         List<Item> items = itemRepo.findAll();
@@ -48,7 +55,7 @@ public class Shop {
 
         // 아이템 구매 처리
         user.points -= selected.price;
-        user.itemIds = user.itemIds.isEmpty() ? String.valueOf(id) : user.itemIds + "," + id;
+        user.itemIds = (user.itemIds == null || user.itemIds.isBlank()) ? String.valueOf(id) : user.itemIds + "," + id;
         userRepo.update(user);
         System.out.println("✅ 구매 완료: " + selected.name);
     }
