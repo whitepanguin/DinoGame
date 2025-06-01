@@ -1,7 +1,8 @@
 package sound;
 
 import javafx.embed.swing.JFXPanel;
-import javafx.scene.media.AudioClip;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 
 import java.net.URL;
 
@@ -9,9 +10,9 @@ public class Roar {
     private static boolean initialized = false;
 
     public static void play() {
-        // JavaFX 플랫폼 초기화 (딱 한 번만 실행)
+        // JavaFX 초기화 (한 번만)
         if (!initialized) {
-            new JFXPanel(); // JavaFX media 시스템 초기화
+            new JFXPanel();
             initialized = true;
         }
 
@@ -22,8 +23,19 @@ public class Roar {
                 return;
             }
 
-            AudioClip clip = new AudioClip(resource.toString());
-            clip.play(); // 즉시 재생
+            Media media = new Media(resource.toString());
+            MediaPlayer player = new MediaPlayer(media);
+            player.play();
+
+            // 2초 후 자동 정지
+            new Thread(() -> {
+                try {
+                    Thread.sleep(3000);
+                    player.stop();
+                } catch (InterruptedException e) {
+                    System.out.println("⚠️ 사운드 정지 실패: " + e.getMessage());
+                }
+            }).start();
 
         } catch (Exception e) {
             System.out.println("⚠️ 사운드 재생 실패: " + e.getMessage());

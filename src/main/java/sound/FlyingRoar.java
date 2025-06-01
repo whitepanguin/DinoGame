@@ -1,17 +1,19 @@
 package sound;
 
 import javafx.embed.swing.JFXPanel;
-import javafx.scene.media.AudioClip;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 
 import java.net.URL;
+import javafx.util.Duration;
 
 public class FlyingRoar {
     private static boolean initialized = false;
 
     public static void play() {
-        // JavaFX 플랫폼 초기화 (한 번만 실행)
+        // JavaFX 초기화
         if (!initialized) {
-            new JFXPanel(); // JavaFX 환경을 초기화
+            new JFXPanel();
             initialized = true;
         }
 
@@ -22,8 +24,20 @@ public class FlyingRoar {
                 return;
             }
 
-            AudioClip clip = new AudioClip(resource.toString());
-            clip.play(); // 사운드 재생
+            Media media = new Media(resource.toString());
+            MediaPlayer player = new MediaPlayer(media);
+
+            player.play();
+
+            // 2초 후 정지
+            new Thread(() -> {
+                try {
+                    Thread.sleep(3000);
+                    player.stop(); // 강제 정지
+                } catch (InterruptedException e) {
+                    System.out.println("⚠️ 사운드 정지 실패: " + e.getMessage());
+                }
+            }).start();
 
         } catch (Exception e) {
             System.out.println("⚠️ 사운드 재생 실패: " + e.getMessage());

@@ -10,6 +10,9 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.util.Map;
+import sound.FlyingRoar;
+import sound.Roar;
+import sound.SeaRoar;
 
 public class Battleimage {
 
@@ -99,6 +102,8 @@ public class Battleimage {
                 String playerPath = IMAGE_MAP.getOrDefault(playerKey, IMAGE_MAP.get("공"));
                 playerView.setImage(new Image(playerPath));
                 playerView.setVisible(player.isAlive());
+
+                playSound(playerKey);
             }
 
             if (enemyView != null && enemy != null) {
@@ -106,9 +111,21 @@ public class Battleimage {
                 String enemyPath = IMAGE_MAP.getOrDefault(enemyKey, IMAGE_MAP.get("공"));
                 enemyView.setImage(new Image(enemyPath));
                 enemyView.setVisible(enemy.isAlive());
+
+                playSound(enemyKey);
             }
         });
     }
+
+    public static void playSound(String type) {
+        switch (type) {
+            case "육" -> Roar.play();
+            case "해" -> SeaRoar.play();
+            case "공" -> FlyingRoar.play();
+            default -> System.out.println("[사운드 없음] 알 수 없는 타입: " + type);
+        }
+    }
+
 
     public static void closeBattle() {
         Platform.runLater(() -> {
