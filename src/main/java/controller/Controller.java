@@ -8,6 +8,9 @@ import java.util.*;
 import java.net.URL;
 import shop.Shop;
 import repository.*;
+import sound.FlyingRoar;
+import sound.Roar;
+import sound.SeaRoar;
 
 public class Controller {
     private final StageController stageController = new StageController();
@@ -79,8 +82,10 @@ public class Controller {
 
                 if (action == 1) {
                     battleService.normalAttack(player, enemy);
+                    player.playSound();
                 } else if (action == 2) {
                     battleService.useSkill(player, enemy);
+                    player.playSound();
                 } else if (action == 3) {
                     System.out.println("⚠️ 아이템 사용 기능은 구현 예정입니다.");
                 } else if (action == 4) {
@@ -278,5 +283,14 @@ public class Controller {
         System.out.println("\n🦖 현재 전투 상황");
         d1.printStatus();
         d2.printStatus();
+    }
+
+    private void playSound(String type) {
+        switch (type) {
+            case "육" -> Roar.play();
+            case "해" -> SeaRoar.play();
+            case "공" -> FlyingRoar.play();
+            default -> System.out.println("[사운드 없음] 알 수 없는 타입: " + type);
+        }
     }
 }
