@@ -164,17 +164,7 @@ public class Controller {
                     while (inShop) {
                         inShop = shop.open(user); // 상점 반복 입장
                     }
-                }else {
-                    System.out.print("➡️ 다음 스테이지로 진행할까요? (1: 예, 2: 아니오): ");
-                    int goNext = sc.nextInt();
-                    if(goNext == 1) {
-                        continue;
-                    }else if (goNext == 2){
-                        break;
-                    }else {
-                        System.out.println("잘못 입력하셨습니다!");
-                        break;
-                    }
+
                 }
 
                 if (user.currentStage == 5) {
